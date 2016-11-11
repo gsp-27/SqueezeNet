@@ -49,10 +49,25 @@ model:add(FireModule(512,s1x1[8],e1x1[8],e3x3[8]))
 model:add(nn.SpatialConvolution(512,10,1,1))
 model:add(nn.ReLU(true))
 model:add(nn.SpatialAveragePooling(4,4,1,1))
-model:add(nn.Reshape(10, true))
-return model
+model:add(nn.View(10))
+-- return model
 
--- print(model)
--- input = torch.randn(20,3,32,32)
--- scores = model:forward(input)
--- print(scores:size())
+-- initialisation of weights as described in Kaiming He et.al paper
+local function MSRinit(net)
+  local function init(name)
+    for k,v in pairs(net:findModules(name)) do
+      local n = v.kW*v.kH*v.nOutputPlane
+      v.weight:normal(0,math.sqrt(2/n))
+      v.bias:zero()
+    end
+  end
+  -- have to do for both backends
+  init'nn.SpatialConvolution'
+end
+
+MSRinit(model)
+
+print(model)
+input = torch.randn(1,3,32,32)
+scores = model:forward(input)
+print(scores)
