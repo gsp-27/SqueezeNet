@@ -46,6 +46,7 @@ model:add(FireModule(384,s1x1[7],e1x1[7],e3x3[7]))
 model:add(nn.SpatialMaxPooling(2,2,2,2)) -- size reduced by 2 so (512,4,4)
 -- fire module 8 output (512,4,4)
 model:add(FireModule(512,s1x1[8],e1x1[8],e3x3[8]))
+model:add(nn.Dropout(0.7))
 model:add(nn.SpatialConvolution(512,10,1,1))
 model:add(nn.ReLU(true))
 model:add(nn.SpatialAveragePooling(4,4,1,1))
@@ -67,7 +68,8 @@ end
 
 MSRinit(model)
 
-print(model)
-input = torch.randn(1,3,32,32)
-scores = model:forward(input)
-print(scores)
+--print(model)
+--input = torch.randn(1,3,32,32)
+--scores = model:forward(input)
+--print(scores)
+return model
