@@ -81,6 +81,7 @@ model:add(mlp)
 model:add(nn.CAddTable())
 model:add(nn.ReLU(true))
 
+model:add(nn.Dropout(0.7))
 model:add(nn.SpatialConvolution(512,10,1,1))
 model:add(nn.ReLU(true))
 model:add(nn.SpatialAveragePooling(4,4,1,1))
@@ -105,3 +106,9 @@ print(model)
 input = torch.randn(1,3,32,32)
 scores = model:forward(input)
 print(scores)
+
+--print(model)
+--input = torch.randn(1,3,32,32)
+--scores = model:forward(input)
+--print(scores)
+--return model
