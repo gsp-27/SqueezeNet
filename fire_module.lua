@@ -28,24 +28,59 @@ s1x1 = {16,16,32,32,48,48,64,64}
 e1x1 = {64,64,128,128,192,192,256,256}
 e3x3 = {64,64,128,128,192,192,256,256}
 
--- fire module 1 output (128,16,16)
-model:add(FireModule(96,s1x1[1],e1x1[1],e3x3[1]))
 -- fire module 2 output (128,16,16)
-model:add(FireModule(128,s1x1[2],e1x1[2],e3x3[2]))
--- fire module 3 output (256,16,16)
+model:add(FireModule(96,s1x1[1],e1x1[1],e3x3[1]))
+
+-- Addition of simple block connection, so output of fire 2 will be sent to
+-- output of fire 3 and the two will be added elementwise to add shortcut
+-- connections
+mlp = nn.ConcatTable()
+-- fire module 3
+mlp:add(FireModule(128, s1x1[2], e1x1[2], e3x3[2]))
+mlp:add(nn.Identity())
+
+model:add(mlp)
+model:add(nn.CAddTable())
+model:add(nn.ReLU(true))
+
+-- fire module 4 output (256,16,16)
 model:add(FireModule(128,s1x1[3],e1x1[3],e3x3[3]))
 model:add(nn.SpatialMaxPooling(2,2,2,2)) -- input size is reduced by 2, so (256,8,8)
--- fire module 4 output (256,8,8)
-model:add(FireModule(256,s1x1[4],e1x1[4],e3x3[4]))
--- fire module 5 output (384,8,8)
-model:add(FireModule(256,s1x1[5],e1x1[5],e3x3[5]))
+
+mlp = nn.ConcatTable()
+-- fire module 5
+mlp:add(FireModule(256,s1x1[4],e1x1[4],e3x3[4]))
+mlp:add(nn.Identity())
+
+model:add(mlp)
+model:add(nn.CAddTable())
+model:add(nn.ReLU(true))
+
 -- fire module 6 output (384,8,8)
-model:add(FireModule(384,s1x1[6],e1x1[6],e3x3[6]))
--- fire module 7 output (512,8,8)
+model:add(FireModule(256,s1x1[5],e1x1[5],e3x3[5]))
+
+mlp = nn.ConcatTable()
+-- fire module 7
+mlp:add(FireModule(384,s1x1[6],e1x1[6],e3x3[6]))
+mlp:add(nn.Identity())
+
+model:add(mlp)
+model:add(nn.CAddTable())
+model:add(nn.ReLU(true))
+
+-- fire module 8 output (512,8,8)
 model:add(FireModule(384,s1x1[7],e1x1[7],e3x3[7]))
 model:add(nn.SpatialMaxPooling(2,2,2,2)) -- size reduced by 2 so (512,4,4)
--- fire module 8 output (512,4,4)
-model:add(FireModule(512,s1x1[8],e1x1[8],e3x3[8]))
+
+-- fire module 9 output (512,4,4)
+mlp = nn.ConcatTable()
+mlp:add(FireModule(512,s1x1[8],e1x1[8],e3x3[8]))
+mlp:add(nn.Identity())
+
+model:add(mlp)
+model:add(nn.CAddTable())
+model:add(nn.ReLU(true))
+
 model:add(nn.SpatialConvolution(512,10,1,1))
 model:add(nn.ReLU(true))
 model:add(nn.SpatialAveragePooling(4,4,1,1))
@@ -66,7 +101,6 @@ local function MSRinit(net)
 end
 
 MSRinit(model)
-
 print(model)
 input = torch.randn(1,3,32,32)
 scores = model:forward(input)
