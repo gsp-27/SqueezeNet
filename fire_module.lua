@@ -20,11 +20,12 @@ end
 local model = nn.Sequential()
 -- first convolution layer output will be (96,16,16) 
 model:add(nn.SpatialConvolution(3,96,3,3,1,1,1,1))
+model:add(nn.SpatialBatchNormalization(96, 1e-5))
 model:add(nn.ReLU(true))
 model:add(nn.SpatialMaxPooling(2,2,2,2))
 
 -- now have to add 8 fire modules
-s1x1 = {16,16,32,32,48,48,64,64}
+s1x1 = {32,32,64,64,96,96,128,128}
 e1x1 = {64,64,128,128,192,192,256,256}
 e3x3 = {64,64,128,128,192,192,256,256}
 
@@ -83,6 +84,7 @@ model:add(nn.ReLU(true))
 
 model:add(nn.Dropout(0.7))
 model:add(nn.SpatialConvolution(512,10,1,1))
+model:add(nn.SpatialBatchNormalization(10, 1e-5))
 model:add(nn.ReLU(true))
 model:add(nn.SpatialAveragePooling(4,4,1,1))
 model:add(nn.View(10))
@@ -102,13 +104,13 @@ local function MSRinit(net)
 end
 
 MSRinit(model)
-print(model)
-input = torch.randn(1,3,32,32)
-scores = model:forward(input)
-print(scores)
+-- print(model)
+-- input = torch.randn(1,3,32,32)
+-- scores = model:forward(input)
+-- print(scores)
 
 --print(model)
 --input = torch.randn(1,3,32,32)
 --scores = model:forward(input)
 --print(scores)
---return model
+return model
